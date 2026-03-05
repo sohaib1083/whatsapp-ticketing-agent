@@ -1,0 +1,40 @@
+# Node modules
+node_modules/
+package-lock.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# WhatsApp session
+.wa_session/
+.wwebjs_auth/
+.wwebjs_cache/
+
+# Environment variables
+.env
+
+# Data files
+data/
+*.json
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+

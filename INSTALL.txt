@@ -1,0 +1,33 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║              🎉 FREE WhatsApp Ticketing Agent 🎉                            ║
+║                                                                              ║
+║              💰 100% FREE - No Paid APIs Required!                          ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+📋 QUICK INSTALL:
+
+1. Install dependencies:
+   npm install && pip3 install -r requirements.txt
+
+2. Start the bot:
+   ./start.sh
+
+3. Scan QR code with WhatsApp
+
+4. Start sending messages to create tickets!
+
+📖 See FREE_SETUP.md for detailed instructions.
+
+💡 WHAT'S INSIDE:
+- ✅ Groq AI (FREE - 14,400 requests/day)
+- ✅ whatsapp-web.js (Open Source)
+- ✅ Local ticket storage (No database costs)
+- ✅ No monthly fees, ever!
+
+🆘 NEED HELP?
+- Read: FREE_SETUP.md (step-by-step guide)
+- Check: README_FREE.md (overview)
+
+🚀 ENJOY YOUR FREE BOT!
