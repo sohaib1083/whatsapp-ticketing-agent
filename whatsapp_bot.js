@@ -96,9 +96,11 @@ client.on('message', async (message) => {
         if (message.from.includes('@lid')) {
             return;
         }
-        
-        // Skip empty messages
-        if (!message.body || message.body.trim() === '') {
+
+        const isVoiceNote = message.type === 'ptt' || message.type === 'audio';
+
+        // Skip non-voice messages with empty body
+        if (!isVoiceNote && (!message.body || message.body.trim() === '')) {
             return;
         }
         
@@ -110,27 +112,68 @@ client.on('message', async (message) => {
             console.log(`🚫 Silently ignored: ${senderNumber} not in whitelist`);
             return; // Just ignore, no reply
         }
+
+        if (isVoiceNote) {
+            // ── Voice note path ──────────────────────────────────────────
+            console.log(`\n🎤 Voice note from ${senderName} (${senderNumber})`);
+            console.log('⬇️  Downloading audio...');
+
+            const media = await message.downloadMedia();
+            if (!media) {
+                console.log('❌ Failed to download voice note media');
+                await message.reply('⚠️ Could not download your voice note. Please try again or send a text message.');
+                return;
+            }
+
+            const approxKB = Math.round(media.data.length * 0.75 / 1024);
+            console.log(`📦 Downloaded: ${media.mimetype}, ~${approxKB}KB`);
+            console.log('🤖 Transcribing and processing...');
+
+            const response = await axios.post(`${PYTHON_BACKEND_URL}/process-voice`, {
+                audio_data: media.data,   // base64 string from whatsapp-web.js
+                mime_type: media.mimetype,
+                user_number: senderNumber,
+                user_name: senderName
+            }, {
+                timeout: 60000  // 60s — transcription can take a moment
+            });
+
+            const result = response.data;
+            if (result.reply) {
+                await message.reply(result.reply);
+                const preview = result.reply.substring(0, 60).replace(/\n/g, ' ');
+                console.log(`✅ Voice reply sent: "${preview}..."`);
+            }
+            if (result.transcription) {
+                console.log(`📝 Transcription: "${result.transcription}"`);
+            }
+            if (result.processed_text && result.processed_text !== result.transcription) {
+                console.log(`🔤 Processed:     "${result.processed_text}"`);
+            }
+
+        } else {
+            // ── Text message path ────────────────────────────────────────
+            console.log(`\n📨 Message from ${senderName} (${senderNumber}):`);
+            console.log(`   "${message.body}"`);
         
-        console.log(`\n📨 Message from ${senderName} (${senderNumber}):`);
-        console.log(`   "${message.body}"`);
+            // Process message through Python backend
+            console.log('🤖 Processing with AI...');
         
-        // Process message through Python backend
-        console.log('🤖 Processing with AI...');
+            const response = await axios.post(`${PYTHON_BACKEND_URL}/process`, {
+                message: message.body,
+                user_number: senderNumber,
+                user_name: senderName
+            }, {
+                timeout: 30000 // 30 second timeout
+            });
         
-        const response = await axios.post(`${PYTHON_BACKEND_URL}/process`, {
-            message: message.body,
-            user_number: senderNumber,
-            user_name: senderName
-        }, {
-            timeout: 30000 // 30 second timeout
-        });
+            const result = response.data;
         
-        const result = response.data;
-        
-        // Send response back to user
-        if (result.reply) {
-            await message.reply(result.reply);
-            console.log(`✅ Sent reply: "${result.reply.substring(0, 50)}..."`);
+            // Send response back to user
+            if (result.reply) {
+                await message.reply(result.reply);
+                console.log(`✅ Sent reply: "${result.reply.substring(0, 50)}..."`);
+            }
         }
         
     } catch (error) {
@@ -179,6 +222,8 @@ axios.get(`${PYTHON_BACKEND_URL}/health`)
         console.log('✅ Python backend is running');
         console.log(`   Version: ${response.data.version || 'FREE'}`);
         console.log(`   AI: ${response.data.ai_provider || 'Groq'}`);
+        console.log(`   Voice: ${response.data.voice_transcription || 'Unknown'}`);
+        console.log(`   Languages: ${(response.data.supported_languages || []).join(', ')}`);
     })
     .catch(error => {
         console.warn('⚠️  Python backend is NOT running!');

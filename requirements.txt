@@ -8,3 +8,10 @@ pydantic>=2.0.0
 qrcode>=7.4.2
 pillow>=10.0.0
 pymongo>=4.6.0
+
+# ── Voice transcription (optional local fallback) ─────────────────────────────
+# Primary transcription uses the FREE Groq Whisper API (already in groq>=0.4.0).
+# If you want a local offline fallback, install openai-whisper + ffmpeg:
+#   pip install openai-whisper
+#   sudo apt install ffmpeg   (or brew install ffmpeg on macOS)
+# openai-whisper
